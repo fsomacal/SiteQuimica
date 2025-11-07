@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AlertaSonoro — Sistema de Alertas para Desastres Naturais</title>
+    <meta name="description" content="Sistema de alertas sonoros automáticos integrado à Defesa Civil para reduzir vítimas em desastres naturais. Sensores, sirenes e capacitação comunitária." />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container" role="main">
+        <header>
+            <div class="brand">
+                <div class="logo" aria-hidden="true">AS</div>
+                <div>
+                    <div style="font-weight:700">AlertaSonoro</div>
+                    <div class="muted" style="margin-top:2px;font-size:13px">Proteção comunitária em tempo real</div>
+                </div>
+            </div>
+            <nav aria-label="Navegação principal">
+                <a href="#como">Como funciona</a>
+                <a href="#treinamento">Treinamento</a>
+                <a href="#contato">Contato</a>
+            </nav>
+        </header>
+
+        <section class="hero">
+            <div class="card">
+                <h1>Sistema de alertas sonoros para áreas de risco</h1>
+                <p class="lead">Plataforma integrada de monitoramento climático e hidrológico que reduz perdas humanas e materiais através da detecção precoce de eventos extremos. Combina sensores IoT de alta precisão, sirenes automáticas georreferenciadas, integração com Defesa Civil e programas de capacitação comunitária para criar uma rede resiliente de proteção contra enchentes, deslizamentos e tempestades severas.</p>
+                <div class="cta">
+                    <button id="demoBtn" class="btn" aria-controls="demo">Ver demonstração do alarme</button>
+                    <a class="btn secondary" href="#treinamento" style="display:inline-flex;align-items:center">Programas e Treinamentos</a>
+                </div>
+
+                <div class="grid" style="margin-top:20px">
+                    <div class="feature">
+                        <strong>Monitoramento em Tempo Real</strong>
+                        <p class="muted" style="margin-top:8px">Rede distribuída de sensores IoT detecta precipitação intensa (>40mm/h), variação do nível de rios (atualização a cada 30s) e rajadas de vento perigosas (>60 km/h), transmitindo dados continuamente para análise preditiva.</p>
+                    </div>
+                    <div class="feature">
+                        <strong>Sirenes Automáticas Inteligentes</strong>
+                        <p class="muted" style="margin-top:8px">Sistema de alerta sonoro com ativação local e por zonas geográficas, mensagens de voz pré-gravadas e personalizáveis em múltiplos idiomas, orientando rotas de evacuação específicas para cada área de risco.</p>
+                    </div>
+                    <div class="feature">
+                        <strong>Integração Multi-Agência</strong>
+                        <p class="muted" style="margin-top:8px">Conexão direta via API com sala de situação da Defesa Civil, Corpo de Bombeiros e CEMADEN, permitindo coordenação de respostas rápidas, despacho otimizado de equipes e compartilhamento de recursos em tempo real.</p>
+                    </div>
+                </div>
+
+                <section id="como" style="margin-top:18px">
+                    <h3 style="margin:0 0 8px">Como funciona</h3>
+                    <ol class="muted" style="padding-left:18px;margin-top:8px">
+                        <li>Sensores meteorológicos e hidrológicos distribuídos estrategicamente coletam dados em tempo real (precipitação, nível de rios, velocidade do vento) e transmitem via rede LoRaWAN/4G para a plataforma central em nuvem.</li>
+                        <li>Algoritmos de machine learning e regras predefinidas pela Defesa Civil analisam os dados continuamente, identificando padrões de risco e calculando probabilidade de enchentes, deslizamentos e tempestades severas.</li>
+                        <li>Quando limiares críticos são atingidos, o sistema dispara automaticamente sirenes nas zonas afetadas com mensagens de voz orientando evacuação, enquanto notificações SMS/push são enviadas para moradores cadastrados e autoridades locais coordenam resposta emergencial.</li>
+                    </ol>
+                    
+                    <!-- River Level Gauge -->
+                    <div style="margin-top:16px">
+                        <h4 style="margin:0 0 10px;font-size:15px">Monitor de Nível do Rio — Zona Leste</h4>
+                        <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+                            <div style="position:relative;width:140px;height:280px;background:linear-gradient(180deg, rgba(10,20,35,0.6) 0%, rgba(15,30,50,0.8) 100%);border-radius:12px;padding:12px;border:2px solid rgba(255,255,255,0.05)">
+                                <!-- Reference levels -->
+                                <div style="position:absolute;right:150px;top:20px;font-size:11px;color:#ff5f57;font-weight:600">Perigo (5m)</div>
+                                <div style="position:absolute;right:150px;top:90px;font-size:11px;color:#ffb86b;font-weight:600">Atenção (4m)</div>
+                                <div style="position:absolute;right:150px;top:160px;font-size:11px;color:#06d6a0;font-weight:600">Normal (3m)</div>
+                                
+                                <!-- Level marks -->
+                                <div style="position:absolute;left:12px;top:20px;right:12px;height:1px;background:rgba(255,95,87,0.3)"></div>
+                                <div style="position:absolute;left:12px;top:90px;right:12px;height:1px;background:rgba(255,184,107,0.3)"></div>
+                                <div style="position:absolute;left:12px;top:160px;right:12px;height:1px;background:rgba(6,214,160,0.3)"></div>
+                                
+                                <!-- River container (inverted: bottom=0) -->
+                                <div style="position:absolute;bottom:12px;left:12px;right:12px;top:12px;border-radius:8px;background:rgba(255,255,255,0.02);overflow:hidden;display:flex;flex-direction:column-reverse">
+                                    <div id="riverLevel" style="width:100%;height:65%;background:linear-gradient(180deg, rgba(6,180,214,0.6), rgba(6,140,214,0.8));border-radius:6px 6px 0 0;transition:height 0.8s ease, background 0.8s ease;position:relative;overflow:hidden">
+                                        <!-- Wave effect -->
+                                        <div style="position:absolute;top:0;left:-100%;width:200%;height:30px;background:radial-gradient(ellipse at center, rgba(255,255,255,0.2) 0%, transparent 70%);animation:wave 3s linear infinite"></div>
+                                        <div style="position:absolute;top:8px;left:0;right:0;text-align:center;font-size:13px;font-weight:700;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.6);z-index:2">
+                                            <span id="riverValue">3.8m</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="flex:1;min-width:240px">
+                                <div style="padding:14px;border-radius:10px;background:rgba(255,184,107,0.08);border-left:4px solid #ffb86b">
+                                    <strong style="color:#ffb86b">Nível de Atenção</strong>
+                                    <p class="muted" style="margin:8px 0 0;font-size:13px">Rio acima do limiar normal. Monitoramento reforçado ativo. Comunidades ribeirinhas foram notificadas.</p>
+                                </div>
+                                <div style="margin-top:12px;display:flex;gap:8px">
+                                    <button id="increaseLevel" class="small" style="display:none">Aumentar nível</button>
+                                    <button id="decreaseLevel" class="small" style="display:none">Diminuir nível</button>
+                                    <button id="resetLevel" class="small" style="display:none">Resetar</button>
+                                </div>
+                                <div style="margin-top:12px;font-size:12px" class="muted">
+                                    <div><strong>Última atualização:</strong> <span id="lastUpdate">Agora</span></div>
+                                    <div style="margin-top:4px"><strong>Taxa de variação:</strong> <span id="changeRate">+0.2 m/h</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="card sidebar">
+                <div class="status">
+                    <div style="flex:1">
+                        <div style="font-weight:700">Status da rede</div>
+                        <div class="muted" style="font-size:13px;margin-top:6px">Última verificação: agora</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div style="font-weight:700">Operacional</div>
+                        <div class="muted" style="font-size:13px">3 zonas ativas</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:12px">
+                    <strong>Sensores</strong>
+                    <div class="sensors" id="sensors">
+                        <!-- sensors populated by JS -->
+                    </div>
+                </div>
+
+                <div style="margin-top:14px">
+                    <strong>Controle</strong>
+                    <div class="controls" style="margin-top:8px">
+                        <button id="refresh" class="small">Atualizar sensores</button>
+                    </div>
+                </div>
+
+                <div style="margin-top:14px">
+                    <strong>Conexões Ativas</strong>
+                    <p class="muted" style="margin:8px 0 0">Integração segura via VPN com Defesa Civil Municipal, Corpo de Bombeiros (193), CEMADEN/INMET para dados meteorológicos, e Sistema Único de Saúde (SUS) para coordenação de emergências médicas em evacuações.</p>
+                </div>
+            </aside>
+        </section>
+
+        <section id="treinamento" style="margin-top:20px" class="card">
+            <h3 style="margin:0 0 8px">Treinamentos e envolvimento comunitário</h3>
+            <p class="muted">Programas regulares em escolas e centros comunitários preparam moradores para agir corretamente durante emergências climáticas. Os treinamentos incluem: reconhecimento de sinais sonoros das sirenes e significado de cada tipo de alerta, identificação de rotas de evacuação seguras e pontos de encontro pré-estabelecidos, montagem de kits de emergência familiar (documentos, água, lanternas, rádio), técnicas de primeiros socorros básicos e comunicação eficaz com equipes de resgate. Simulados anuais envolvem toda a comunidade, testando tempos de resposta e identificando pontos de melhoria no sistema.</p>
+        </section>
+
+        <section style="margin-top:18px" class="card">
+            <h3 style="margin:0 0 8px">Tecnologias e segurança</h3>
+            <p class="muted">A infraestrutura utiliza criptografia AES-256 para transmissão de dados sensíveis, redundância de rede com múltiplos provedores (4G/5G e satélite), e alimentação backup via painéis solares e baterias de lítio com autonomia de 72 horas. Monitoramento 24/7 por equipe técnica especializada garante disponibilidade de 99.9%. A arquitetura é pensada para operar mesmo em caso de falhas de infraestrutura pública, com sirenes equipadas com modo offline que disparam localmente baseadas em sensores independentes.</p>
+            <div style="display:flex;gap:18px;margin-top:12px;flex-wrap:wrap">
+                <div style="flex:1;min-width:220px" class="feature">
+                    <strong>Hardware</strong><p class="muted" style="margin-top:8px">Sensores industriais de nível ultrassônicos (precisão ±2mm), pluviômetros de báscula automáticos calibrados (0.2mm/tip), anemômetros de hélice marinha (resistentes a 150 km/h), estações meteorológicas Davis Vantage Pro2, e sirenes omnidirecionais com 130dB a 100m de alcance acústico.</p>
+                </div>
+                <div style="flex:1;min-width:220px" class="feature">
+                    <strong>Software</strong><p class="muted" style="margin-top:8px">Plataforma web em React/Node.js com dashboards em tempo real usando D3.js para visualizações, APIs RESTful documentadas via Swagger para integração com sistemas da Defesa Civil e bombeiros, banco de dados PostgreSQL com TimescaleDB para séries temporais, e sistema de notificações via Twilio (SMS) e Firebase (push mobile).</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <div>
+                <strong>AlertaSonoro</strong>
+                <div class="muted">© Projeto Comunitário • Infraestrutura pública</div>
+            </div>
+            <div id="contato">
+                <div class="muted">Email: contato@alertasonoro.org</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Developer Panel -->
+    <div id="devToggle" title="Abrir Developer Panel">⚙</div>
+    <div id="devPanel">
+        <div class="dev-header">
+            <h3><span style="font-size:18px">⚡</span> Developer Panel</h3>
+            <div style="font-size:11px;color:#94a3b8;margin-top:4px">Controle avançado de simulação</div>
+        </div>
+
+        <!-- Simulation Control -->
+        <div class="dev-section">
+            <h4>Controle de Simulação</h4>
+            <div class="dev-content">
+                <div class="dev-row">
+                    <span class="dev-label">Status:</span>
+                    <span class="dev-status active" id="simStatus">Ativo</span>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Velocidade:</span>
+                    <span class="dev-value" id="simSpeedValue">1.0x</span>
+                </div>
+                <div class="dev-row">
+                    <div class="dev-slider" style="flex:2">
+                        <input type="range" id="simSpeed" min="0" max="10" step="0.5" value="1">
+                        <div class="dev-slider-fill" id="simSpeedFill" style="width:10%"></div>
+                    </div>
+                </div>
+                <div style="font-size:10px;color:#64748b;margin-top:4px">0x = Pausado | 1x = Normal | 10x = Ultra-rápido</div>
+                <div class="dev-grid" style="margin-top:12px">
+                    <button class="dev-btn success" id="simPlay">▶ Iniciar</button>
+                    <button class="dev-btn" id="simPause">⏸ Pausar</button>
+                    <button class="dev-btn" id="simReset">↻ Resetar</button>
+                    <button class="dev-btn danger" id="simEmergency">🚨 Emergência</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- River Control -->
+        <div class="dev-section">
+            <h4>Nível do Rio</h4>
+            <div class="dev-content">
+                <div class="dev-row">
+                    <span class="dev-label">Nível Atual:</span>
+                    <span class="dev-value" id="devRiverLevel">3.8m</span>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Definir Nível (m):</span>
+                    <div class="dev-slider" style="flex:2">
+                        <input type="range" id="riverLevelSlider" min="1" max="6" step="0.1" value="3.8">
+                        <div class="dev-slider-fill" id="riverLevelFill" style="width:46.67%"></div>
+                    </div>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Taxa de Mudança:</span>
+                    <span class="dev-value" id="riverRateValue">+0.2 m/h</span>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Velocidade de Mudança:</span>
+                    <div class="dev-slider" style="flex:2">
+                        <input type="range" id="riverRate" min="-5" max="5" step="0.1" value="0.2">
+                        <div class="dev-slider-fill" id="riverRateFill" style="width:52%"></div>
+                    </div>
+                </div>
+                <div class="dev-grid" style="margin-top:12px">
+                    <button class="dev-btn success" id="riverNormal">Normal (3m)</button>
+                    <button class="dev-btn" id="riverWarning">Atenção (4m)</button>
+                    <button class="dev-btn danger" id="riverDanger">Perigo (5m)</button>
+                    <button class="dev-btn danger" id="riverCritical">Crítico (6m)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Control -->
+        <div class="dev-section">
+            <h4>Controle de Sensores</h4>
+            <div class="dev-content">
+                <div class="sensor-control">
+                    <strong>S-01: Pluviômetro - Zona Norte</strong>
+                    <div class="dev-row">
+                        <span class="dev-label" style="font-size:11px">Chuva:</span>
+                        <span class="dev-value" style="font-size:11px" id="sensor1Value">12 mm/h</span>
+                    </div>
+                    <div class="sensor-state">
+                        <button class="dev-btn success small" onclick="setSensorState(0, 'normal')">Normal</button>
+                        <button class="dev-btn small" onclick="setSensorState(0, 'warn')">Atenção</button>
+                        <button class="dev-btn danger small" onclick="setSensorState(0, 'danger')">Perigo</button>
+                    </div>
+                </div>
+                <div class="sensor-control" style="margin-top:10px">
+                    <strong>S-02: Nível do Rio - Zona Leste</strong>
+                    <div class="dev-row">
+                        <span class="dev-label" style="font-size:11px">Nível:</span>
+                        <span class="dev-value" style="font-size:11px" id="sensor2Value">3.8 m</span>
+                    </div>
+                    <div class="sensor-state">
+                        <button class="dev-btn success small" onclick="setSensorState(1, 'normal')">Normal</button>
+                        <button class="dev-btn small" onclick="setSensorState(1, 'warn')">Atenção</button>
+                        <button class="dev-btn danger small" onclick="setSensorState(1, 'danger')">Perigo</button>
+                    </div>
+                </div>
+                <div class="sensor-control" style="margin-top:10px">
+                    <strong>S-03: Anemômetro - Zona Sul</strong>
+                    <div class="dev-row">
+                        <span class="dev-label" style="font-size:11px">Vento:</span>
+                        <span class="dev-value" style="font-size:11px" id="sensor3Value">8 km/h</span>
+                    </div>
+                    <div class="sensor-state">
+                        <button class="dev-btn success small" onclick="setSensorState(2, 'normal')">Normal</button>
+                        <button class="dev-btn small" onclick="setSensorState(2, 'warn')">Atenção</button>
+                        <button class="dev-btn danger small" onclick="setSensorState(2, 'danger')">Perigo</button>
+                    </div>
+                </div>
+                <div class="sensor-control" style="margin-top:10px">
+                    <strong>S-04: Estação Meteo - Centro</strong>
+                    <div class="dev-row">
+                        <span class="dev-label" style="font-size:11px">Status:</span>
+                        <span class="dev-value" style="font-size:11px" id="sensor4Value">Normal</span>
+                    </div>
+                    <div class="sensor-state">
+                        <button class="dev-btn success small" onclick="setSensorState(3, 'normal')">Normal</button>
+                        <button class="dev-btn small" onclick="setSensorState(3, 'warn')">Atenção</button>
+                        <button class="dev-btn danger small" onclick="setSensorState(3, 'danger')">Perigo</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Siren Control -->
+        <div class="dev-section">
+            <h4>Controle de Sirenes</h4>
+            <div class="dev-content">
+                <div class="dev-row">
+                    <span class="dev-label">Status da Sirene:</span>
+                    <span class="dev-status stopped" id="sirenStatus">Desligada</span>
+                </div>
+                <div class="dev-grid" style="margin-top:12px">
+                    <button class="dev-btn danger" id="sirenTrigger">🔊 Disparar Sirene</button>
+                    <button class="dev-btn" id="sirenStop">🔇 Parar Sirene</button>
+                    <button class="dev-btn" id="sirenTest">🔔 Teste (3s)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Refresh -->
+        <div class="dev-section">
+            <h4>Atualização de Dados</h4>
+            <div class="dev-content">
+                <div class="dev-row">
+                    <span class="dev-label">Auto-Update:</span>
+                    <span class="dev-status active" id="autoUpdateStatus">Ativo (5s)</span>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Intervalo (s):</span>
+                    <div class="dev-slider" style="flex:2">
+                        <input type="range" id="updateInterval" min="1" max="30" step="1" value="5">
+                        <div class="dev-slider-fill" id="updateIntervalFill" style="width:13.79%"></div>
+                    </div>
+                    <span class="dev-value" id="updateIntervalValue">5s</span>
+                </div>
+                <button class="dev-btn success" id="forceRefresh" style="width:100%;margin-top:8px">⟳ Forçar Atualização Agora</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="dev-section">
+            <h4>Estatísticas</h4>
+            <div class="dev-content">
+                <div class="dev-row">
+                    <span class="dev-label">Tempo de Simulação:</span>
+                    <span class="dev-value" id="simTime">00:00:00</span>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Updates Executados:</span>
+                    <span class="dev-value" id="updateCount">0</span>
+                </div>
+                <div class="dev-row">
+                    <span class="dev-label">Alertas Disparados:</span>
+                    <span class="dev-value" id="alertCount">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
