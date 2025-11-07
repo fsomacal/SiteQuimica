@@ -54,9 +54,15 @@
 
     // WebAudio siren
     let audioCtx, oscillator, gainNode, sirenInterval;
+    // Secondary alarm (beep pattern) used when multiple sensors are critical
+    let secondaryOsc, secondaryGain, secondaryInterval;
+
     function startSiren(){
         if(audioCtx) return;
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // expose to global so other modules can check state reliably
+        window.audioCtx = audioCtx;
+
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
         oscillator.type = 'sine';
@@ -88,16 +94,23 @@
             sirenStatus.className = 'dev-status danger';
         }
     }
+
     function stopSiren(){
         if(!audioCtx) return;
         clearInterval(sirenInterval);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+        if(gainNode && audioCtx){
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+        }
         setTimeout(()=>{
-            oscillator.stop();
-            oscillator.disconnect();
-            gainNode.disconnect();
-            audioCtx.close();
+            try{
+                if(oscillator) oscillator.stop();
+                if(oscillator) oscillator.disconnect();
+                if(gainNode) gainNode.disconnect();
+                if(audioCtx) audioCtx.close();
+            }catch(e){/* ignore */}
             audioCtx = oscillator = gainNode = null;
+            // clear global marker
+            window.audioCtx = null;
         }, 600);
         
         // Update siren status
@@ -108,8 +121,50 @@
         }
     }
 
+    // Secondary alarm: short beeps (used when multiple sensors are critical)
+    function startSecondaryAlarm(){
+        if(secondaryOsc) return;
+        // use a new small audio context if main siren not present, otherwise reuse audioCtx
+        const ctx = window.audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        secondaryOsc = ctx.createOscillator();
+        secondaryGain = ctx.createGain();
+        secondaryOsc.type = 'square';
+        secondaryOsc.frequency.setValueAtTime(1000, ctx.currentTime);
+        secondaryGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+        secondaryOsc.connect(secondaryGain);
+        secondaryGain.connect(ctx.destination);
+        try{ secondaryOsc.start(); } catch(e){}
+
+        // beep pattern every 800ms
+        secondaryInterval = setInterval(()=>{
+            try{
+                secondaryGain.gain.cancelScheduledValues(ctx.currentTime);
+                secondaryGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                secondaryGain.gain.exponentialRampToValueAtTime(0.12, ctx.currentTime + 0.02);
+                secondaryGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+            }catch(e){/* ignore */}
+        }, 800);
+        // expose marker
+        window.secondaryAlarmActive = true;
+    }
+
+    function stopSecondaryAlarm(){
+        if(!secondaryOsc) return;
+        clearInterval(secondaryInterval);
+        try{
+            secondaryGain.gain.exponentialRampToValueAtTime(0.0001, (window.audioCtx || secondaryOsc.context).currentTime + 0.05);
+        }catch(e){}
+        setTimeout(()=>{
+            try{ secondaryOsc.stop(); secondaryOsc.disconnect(); secondaryGain.disconnect(); }catch(e){}
+            secondaryOsc = secondaryGain = null;
+            window.secondaryAlarmActive = false;
+        }, 120);
+    }
+
     window.startSiren = startSiren;
     window.stopSiren = stopSiren;
+    window.startSecondaryAlarm = startSecondaryAlarm;
+    window.stopSecondaryAlarm = stopSecondaryAlarm;
 
     const demoBtn = document.getElementById('demoBtn');
     if(demoBtn){
@@ -432,6 +487,22 @@
         } else if(simState.riverLevel < 4.5 && window.audioCtx){
             window.stopSiren();
         }
+
+        // Composite alarm: outros alertas só tocam se os três sensores estiverem críticos
+        try{
+            const rain = window.sensorData[0] && Number(window.sensorData[0].value) || 0;
+            const river = window.sensorData[1] && Number(window.sensorData[1].value) || 0;
+            const wind = window.sensorData[2] && Number(window.sensorData[2].value) || 0;
+            const allCritical = (rain >= 75) && (river >= 5.0) && (wind >= 60);
+            if(allCritical){
+                // Start secondary alarm (beeps) in addition to main siren
+                window.startSecondaryAlarm();
+                // ensure main siren on as well
+                if(!window.audioCtx) { window.startSiren(); simState.alertCount++; }
+            } else {
+                window.stopSecondaryAlarm();
+            }
+        }catch(e){ /* ignore safety */ }
         
         updateDevStats();
     }
@@ -446,6 +517,8 @@
         simState.updateCount++;
         simState.lastUpdate = Date.now();
         updateDevStats();
+        // Update charts if available
+        try{ if(typeof updateCharts === 'function') updateCharts(); }catch(e){}
     }
     
     // Update dev panel stats
@@ -567,10 +640,71 @@
     }
     
     // Start simulation on load
+    // Inicializar gráficos (Chart.js) — se disponível
+    let rainChart, windChart, riverChart;
+    function initCharts(){
+        try{
+            const ctxR = document.getElementById('chartRain');
+            const ctxW = document.getElementById('chartWind');
+            const ctxV = document.getElementById('chartRiver');
+            if(!ctxR || !ctxW || !ctxV || typeof Chart === 'undefined') return;
+
+            const commonOptions = {
+                type: 'line',
+                options: {
+                    animation: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { display: false } },
+                    plugins: { legend: { display: false } }
+                }
+            };
+
+            const nowLabels = Array.from({length:30}, (_,i)=>'');
+
+            rainChart = new Chart(ctxR.getContext('2d'), Object.assign({}, commonOptions, {
+                data: { labels: nowLabels.slice(), datasets:[{data: Array(30).fill(window.sensorData[0].value || 0), borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.08)', tension:0.2}] },
+                options:{...commonOptions.options, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
+            }));
+
+            windChart = new Chart(ctxW.getContext('2d'), Object.assign({}, commonOptions, {
+                data: { labels: nowLabels.slice(), datasets:[{data: Array(30).fill(window.sensorData[2].value || 0), borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,0.06)', tension:0.2}] },
+                options:{...commonOptions.options, scales:{y:{beginAtZero:true}}}
+            }));
+
+            riverChart = new Chart(ctxV.getContext('2d'), Object.assign({}, commonOptions, {
+                data: { labels: nowLabels.slice(), datasets:[{data: Array(30).fill(window.sensorData[1].value || 0), borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.06)', tension:0.2}] },
+                options:{...commonOptions.options, scales:{y:{beginAtZero:true}}}
+            }));
+        }catch(e){ console.warn('Chart init failed', e); }
+    }
+
+    function updateCharts(){
+        try{
+            if(rainChart){
+                rainChart.data.datasets[0].data.push(Number(window.sensorData[0].value.toFixed(1)));
+                if(rainChart.data.datasets[0].data.length>60) rainChart.data.datasets[0].data.shift();
+                rainChart.update('none');
+            }
+            if(windChart){
+                windChart.data.datasets[0].data.push(Number(window.sensorData[2].value.toFixed(1)));
+                if(windChart.data.datasets[0].data.length>60) windChart.data.datasets[0].data.shift();
+                windChart.update('none');
+            }
+            if(riverChart){
+                riverChart.data.datasets[0].data.push(Number(window.sensorData[1].value.toFixed(2)));
+                if(riverChart.data.datasets[0].data.length>60) riverChart.data.datasets[0].data.shift();
+                riverChart.update('none');
+            }
+        }catch(e){/* ignore chart update errors */}
+    }
+
+    // Inicializa tudo e inicia simulação
+    initCharts();
     startSimulation();
     updateDevStats();
     updateDevDisplays();
-    
+
     // Periodic dev display update
     setInterval(updateDevDisplays, 2000);
     } // Close initDevPanel function

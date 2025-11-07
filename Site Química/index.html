@@ -141,6 +141,22 @@
             <p class="muted">Programas regulares em escolas e centros comunitários preparam moradores para agir corretamente durante emergências climáticas. Os treinamentos incluem: reconhecimento de sinais sonoros das sirenes e significado de cada tipo de alerta, identificação de rotas de evacuação seguras e pontos de encontro pré-estabelecidos, montagem de kits de emergência familiar (documentos, água, lanternas, rádio), técnicas de primeiros socorros básicos e comunicação eficaz com equipes de resgate. Simulados anuais envolvem toda a comunidade, testando tempos de resposta e identificando pontos de melhoria no sistema.</p>
         </section>
 
+        <section id="graficos" style="margin-top:18px" class="card">
+            <h3 style="margin:0 0 8px">Gráficos dos Sensores (simulados)</h3>
+            <p class="muted">Visualização em tempo real dos últimos valores simulados do pluviômetro, anemômetro e nível do rio.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+                <div style="flex:1;min-width:280px">
+                    <canvas id="chartRain" height="160"></canvas>
+                </div>
+                <div style="flex:1;min-width:280px">
+                    <canvas id="chartWind" height="160"></canvas>
+                </div>
+                <div style="flex:1;min-width:280px">
+                    <canvas id="chartRiver" height="160"></canvas>
+                </div>
+            </div>
+        </section>
+
         <section style="margin-top:18px" class="card">
             <h3 style="margin:0 0 8px">Tecnologias e segurança</h3>
             <p class="muted">A infraestrutura utiliza criptografia AES-256 para transmissão de dados sensíveis, redundância de rede com múltiplos provedores (4G/5G e satélite), e alimentação backup via painéis solares e baterias de lítio com autonomia de 72 horas. Monitoramento 24/7 por equipe técnica especializada garante disponibilidade de 99.9%. A arquitetura é pensada para operar mesmo em caso de falhas de infraestrutura pública, com sirenes equipadas com modo offline que disparam localmente baseadas em sensores independentes.</p>
@@ -347,6 +363,8 @@
         </div>
     </div>
 
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
