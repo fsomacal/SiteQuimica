@@ -21,39 +21,78 @@
                 <a href="#como">Como funciona</a>
                 <a href="#treinamento">Treinamento</a>
                 <a href="#contato">Contato</a>
+                <button id="themeToggle" class="theme-toggle" title="Alternar tema">
+                    <span class="theme-icon">🔦</span>
+                </button>
             </nav>
         </header>
 
+        <!-- Botão Voltar ao Topo -->
+        <button id="backToTop" class="back-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">
+            ↑
+        </button>
+
+        <!-- Sistema de Notificações -->
+        <div id="notificationContainer" class="notification-container"></div>
+
         <section class="hero">
-            <div class="card">
+            <div class="card fade-in">
                 <h1>Sistema de alertas sonoros para áreas de risco</h1>
-                <p class="lead">Plataforma integrada de monitoramento climático e hidrológico que reduz perdas humanas e materiais através da detecção precoce de eventos extremos. Combina sensores IoT de alta precisão, sirenes automáticas georreferenciadas, integração com Defesa Civil e programas de capacitação comunitária para criar uma rede resiliente de proteção contra enchentes, deslizamentos e tempestades severas.</p>
+                <p class="lead">Sistema que monitora o clima e os rios para avisar a população sobre perigos como enchentes, deslizamentos e tempestades. Usa sensores automáticos, sirenes de alerta e trabalha junto com a Defesa Civil para proteger as comunidades e salvar vidas.</p>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-number" data-target="15049">0</div>
+                        <div class="stat-label">Pessoas Protegidas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚨</div>
+                        <div class="stat-number" data-target="47">0</div>
+                        <div class="stat-label">Alertas Este Ano</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📍</div>
+                        <div class="stat-number" data-target="12">0</div>
+                        <div class="stat-label">Sensores Ativos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-number" data-target="99">0</div>
+                        <div class="stat-label">% Tempo Ativo</div>
+                    </div>
+                </div>
+
                 <div class="cta">
-                    <button id="demoBtn" class="btn" aria-controls="demo">Ver demonstração do alarme</button>
-                    <a class="btn secondary" href="#treinamento" style="display:inline-flex;align-items:center">Programas e Treinamentos</a>
+                    <button id="demoBtn" class="btn" aria-controls="demo">🔊 Ver demonstração do alarme</button>
+                    <a class="btn secondary" href="#treinamento" style="display:inline-flex;align-items:center">📚 Programas e Treinamentos</a>
                 </div>
 
                 <div class="grid" style="margin-top:20px">
-                    <div class="feature">
-                        <strong>Monitoramento em Tempo Real</strong>
-                        <p class="muted" style="margin-top:8px">Rede distribuída de sensores IoT detecta precipitação intensa (>40mm/h), variação do nível de rios (atualização a cada 30s) e rajadas de vento perigosas (>60 km/h), transmitindo dados continuamente para análise preditiva.</p>
+                    <div class="feature fade-in-up">
+                        <div class="feature-icon">🌧️</div>
+                        <strong>Monitoramento Constante</strong>
+                        <p class="muted" style="margin-top:8px">Sensores espalhados pela cidade medem chuva forte, nível dos rios e velocidade do vento. Os dados são atualizados a cada 30 segundos para que a gente possa agir rápido.</p>
                     </div>
-                    <div class="feature">
-                        <strong>Sirenes Automáticas Inteligentes</strong>
-                        <p class="muted" style="margin-top:8px">Sistema de alerta sonoro com ativação local e por zonas geográficas, mensagens de voz pré-gravadas e personalizáveis em múltiplos idiomas, orientando rotas de evacuação específicas para cada área de risco.</p>
+                    <div class="feature fade-in-up" style="animation-delay: 0.1s">
+                        <div class="feature-icon">📢</div>
+                        <strong>Sirenes Automáticas</strong>
+                        <p class="muted" style="margin-top:8px">Quando há perigo, as sirenes tocam automaticamente avisando a população. Mensagens de voz indicam para onde ir e como se proteger.</p>
                     </div>
-                    <div class="feature">
-                        <strong>Integração Multi-Agência</strong>
-                        <p class="muted" style="margin-top:8px">Conexão direta via API com sala de situação da Defesa Civil, Corpo de Bombeiros e CEMADEN, permitindo coordenação de respostas rápidas, despacho otimizado de equipes e compartilhamento de recursos em tempo real.</p>
+                    <div class="feature fade-in-up" style="animation-delay: 0.2s">
+                        <div class="feature-icon">🤝</div>
+                        <strong>Trabalho em Equipe</strong>
+                        <p class="muted" style="margin-top:8px">Conectado com a Defesa Civil, Bombeiros e órgãos do clima. Todos trabalham juntos para responder rápido e ajudar as pessoas em risco.</p>
                     </div>
                 </div>
 
                 <section id="como" style="margin-top:18px">
                     <h3 style="margin:0 0 8px">Como funciona</h3>
                     <ol class="muted" style="padding-left:18px;margin-top:8px">
-                        <li>Sensores meteorológicos e hidrológicos distribuídos estrategicamente coletam dados em tempo real (precipitação, nível de rios, velocidade do vento) e transmitem via rede LoRaWAN/4G para a plataforma central em nuvem.</li>
-                        <li>Algoritmos de machine learning e regras predefinidas pela Defesa Civil analisam os dados continuamente, identificando padrões de risco e calculando probabilidade de enchentes, deslizamentos e tempestades severas.</li>
-                        <li>Quando limiares críticos são atingidos, o sistema dispara automaticamente sirenes nas zonas afetadas com mensagens de voz orientando evacuação, enquanto notificações SMS/push são enviadas para moradores cadastrados e autoridades locais coordenam resposta emergencial.</li>
+                        <li>Sensores instalados pela cidade coletam informações sobre chuva, nível dos rios e vento. Esses dados são enviados constantemente para um sistema central.</li>
+                        <li>O sistema analisa os dados automaticamente e identifica quando há risco de enchente, deslizamento ou tempestade perigosa.</li>
+                        <li>Quando detecta perigo, as sirenes tocam nas áreas em risco com orientações de evacuação. Ao mesmo tempo, mensagens são enviadas por SMS para moradores cadastrados e as autoridades são alertadas.</li>
                     </ol>
                     
                     <!-- River Level Gauge -->
@@ -131,55 +170,132 @@
 
                 <div style="margin-top:14px">
                     <strong>Conexões Ativas</strong>
-                    <p class="muted" style="margin:8px 0 0">Integração segura via VPN com Defesa Civil Municipal, Corpo de Bombeiros (193), CEMADEN/INMET para dados meteorológicos, e Sistema Único de Saúde (SUS) para coordenação de emergências médicas em evacuações.</p>
+                    <p class="muted" style="margin:8px 0 0">Conectado com a Defesa Civil da cidade, Bombeiros (193), órgãos de meteorologia e Sistema de Saúde (SUS) para coordenar atendimento médico durante evacuações.</p>
                 </div>
             </aside>
         </section>
 
-        <section id="treinamento" style="margin-top:20px" class="card">
+        <section id="treinamento" style="margin-top:20px" class="card scroll-reveal">
             <h3 style="margin:0 0 8px">Treinamentos e envolvimento comunitário</h3>
-            <p class="muted">Programas regulares em escolas e centros comunitários preparam moradores para agir corretamente durante emergências climáticas. Os treinamentos incluem: reconhecimento de sinais sonoros das sirenes e significado de cada tipo de alerta, identificação de rotas de evacuação seguras e pontos de encontro pré-estabelecidos, montagem de kits de emergência familiar (documentos, água, lanternas, rádio), técnicas de primeiros socorros básicos e comunicação eficaz com equipes de resgate. Simulados anuais envolvem toda a comunidade, testando tempos de resposta e identificando pontos de melhoria no sistema.</p>
+            <p class="muted">Oferecemos cursos regulares em escolas e centros comunitários para preparar as pessoas. Nos treinamentos, você aprende: entender os sons das sirenes e o que cada alerta significa, saber quais rotas usar para evacuar com segurança, montar uma mochila de emergência (documentos, água, lanterna, rádio), primeiros socorros básicos e como se comunicar com as equipes de resgate. Fazemos também simulados anuais com toda a comunidade para treinar e melhorar nosso sistema.</p>
         </section>
 
-        <section id="graficos" style="margin-top:18px" class="card">
-            <h3 style="margin:0 0 8px">Gráficos dos Sensores (simulados)</h3>
-            <p class="muted">Visualização em tempo real dos últimos valores simulados do pluviômetro, anemômetro e nível do rio.</p>
-            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px">
-                <div style="display:flex;gap:8px;align-items:center">
-                    <label for="historyLen" class="muted" style="font-size:13px">Amostras:</label>
-                    <select id="historyLen" style="padding:6px;border-radius:6px;background:rgba(255,255,255,0.03);color:#e6eef8;border:1px solid rgba(255,255,255,0.04)">
-                        <option value="30">30</option>
-                        <option value="60" selected>60</option>
-                        <option value="120">120</option>
-                    </select>
-                </div>
-                <div style="display:flex;gap:8px">
-                    <button id="exportCsv" class="small">Exportar CSV</button>
-                </div>
-            </div>
+        <section id="graficos" style="margin-top:18px" class="card scroll-reveal">
+            <h3 style="margin:0 0 8px">Gráficos dos Sensores (simulação)</h3>
+            <p class="muted">Veja aqui os dados simulados de chuva, vento e nível do rio em tempo real.</p>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
                 <div style="flex:1 1 32%;min-width:280px">
-                    <canvas id="chartRain" height="260" style="width:100%;height:260px;display:block;background:transparent"></canvas>
+                    <div class="chart-loading" id="chartRainLoading">
+                        <div class="spinner"></div>
+                        <div>Carregando dados...</div>
+                    </div>
+                    <canvas id="chartRain" height="260" style="width:100%;height:260px;display:none;background:transparent"></canvas>
                 </div>
                 <div style="flex:1 1 32%;min-width:280px">
-                    <canvas id="chartWind" height="260" style="width:100%;height:260px;display:block;background:transparent"></canvas>
+                    <div class="chart-loading" id="chartWindLoading">
+                        <div class="spinner"></div>
+                        <div>Carregando dados...</div>
+                    </div>
+                    <canvas id="chartWind" height="260" style="width:100%;height:260px;display:none;background:transparent"></canvas>
                 </div>
                 <div style="flex:1 1 32%;min-width:280px">
-                    <canvas id="chartRiver" height="260" style="width:100%;height:260px;display:block;background:transparent"></canvas>
+                    <div class="chart-loading" id="chartRiverLoading">
+                        <div class="spinner"></div>
+                        <div>Carregando dados...</div>
+                    </div>
+                    <canvas id="chartRiver" height="260" style="width:100%;height:260px;display:none;background:transparent"></canvas>
                 </div>
             </div>
         </section>
 
-        <section style="margin-top:18px" class="card">
-            <h3 style="margin:0 0 8px">Tecnologias e segurança</h3>
-            <p class="muted">A infraestrutura utiliza criptografia AES-256 para transmissão de dados sensíveis, redundância de rede com múltiplos provedores (4G/5G e satélite), e alimentação backup via painéis solares e baterias de lítio com autonomia de 72 horas. Monitoramento 24/7 por equipe técnica especializada garante disponibilidade de 99.9%. A arquitetura é pensada para operar mesmo em caso de falhas de infraestrutura pública, com sirenes equipadas com modo offline que disparam localmente baseadas em sensores independentes.</p>
+        <section style="margin-top:18px" class="card scroll-reveal">
+            <h3 style="margin:0 0 8px">Tecnologia e segurança</h3>
+            <p class="muted">O sistema usa segurança forte para proteger os dados, tem múltiplas conexões de internet (4G/5G e satélite) caso uma falhe, e funciona com painéis solares e baterias que duram até 3 dias sem energia elétrica. Uma equipe monitora tudo 24 horas por dia. As sirenes funcionam mesmo se a internet cair, usando sensores próprios para detectar perigo.</p>
             <div style="display:flex;gap:18px;margin-top:12px;flex-wrap:wrap">
                 <div style="flex:1;min-width:220px" class="feature">
-                    <strong>Hardware</strong><p class="muted" style="margin-top:8px">Sensores industriais de nível ultrassônicos (precisão ±2mm), pluviômetros de báscula automáticos calibrados (0.2mm/tip), anemômetros de hélice marinha (resistentes a 150 km/h), estações meteorológicas Davis Vantage Pro2, e sirenes omnidirecionais com 130dB a 100m de alcance acústico.</p>
+                    <strong>Equipamentos</strong><p class="muted" style="margin-top:8px">Medidores de nível de rio muito precisos, medidores de chuva automáticos, medidores de vento resistentes, estações meteorológicas completas e sirenes potentes que alcançam 100 metros de distância.</p>
                 </div>
                 <div style="flex:1;min-width:220px" class="feature">
-                    <strong>Software</strong><p class="muted" style="margin-top:8px">Plataforma web em React/Node.js com dashboards em tempo real usando D3.js para visualizações, APIs RESTful documentadas via Swagger para integração com sistemas da Defesa Civil e bombeiros, banco de dados PostgreSQL com TimescaleDB para séries temporais, e sistema de notificações via Twilio (SMS) e Firebase (push mobile).</p>
+                    <strong>Sistema</strong><p class="muted" style="margin-top:8px">Plataforma online que mostra tudo em tempo real, conectada com os sistemas da Defesa Civil e Bombeiros. Envia alertas por SMS e notificações no celular automaticamente.</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" style="margin-top:18px" class="card fade-in-up">
+            <h3 style="margin:0 0 16px">❓ Perguntas Frequentes</h3>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>O que fazer quando a sirene toca?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>1. Mantenha a calma e ouça atentamente a mensagem de voz<br>
+                        2. Pegue sua mochila de emergência (documentos, água, lanterna)<br>
+                        3. Siga para o ponto de evacuação mais próximo<br>
+                        4. Ajude idosos, crianças e pessoas com dificuldade de locomoção<br>
+                        5. NÃO volte para casa até receber autorização</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Como me cadastro para receber alertas no celular?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Entre em contato com a Defesa Civil da sua cidade ou envie um email para <strong>contato@alertasonoro.org</strong> com seu nome completo, telefone e endereço. O cadastro é gratuito!</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>O sistema funciona durante quedas de energia?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sim! Todos os equipamentos têm baterias de backup e painéis solares que garantem funcionamento por até 3 dias sem energia elétrica. As sirenes também podem funcionar de forma independente.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Onde ficam os pontos de evacuação?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Os pontos de evacuação são definidos pela Defesa Civil de cada cidade e ficam em locais seguros como escolas, ginásios e centros comunitários em áreas altas. Participe dos treinamentos para conhecer o ponto mais próximo de você!</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Posso testar se vou receber os alertas?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sim! Realizamos testes periódicos (geralmente na primeira quarta-feira do mês às 10h) e simulados anuais. Você será avisado com antecedência sobre os testes programados.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Minha cidade pode ter esse sistema?</span>
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Claro! Entre em contato conosco pelo email <strong>contato@alertasonoro.org</strong>. Podemos ajudar sua prefeitura a implementar o sistema, oferecendo consultoria técnica e apoio na captação de recursos.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline de Alertas -->
+        <section id="timeline" style="margin-top:18px" class="card scroll-reveal">
+            <h3 style="margin:0 0 16px">📋 Últimos Alertas Emitidos</h3>
+            <div id="alertTimeline" class="alert-timeline">
+                <!-- Populado via JS -->
             </div>
         </section>
 

@@ -1,4 +1,4 @@
-﻿// Theme Management with Cookie Storage
+// Theme Management with Cookie Storage
 (function(){
     // Cookie helper functions
     function setCookie(name, value, days) {
@@ -31,7 +31,8 @@
     function updateThemeIcon() {
         const themeIcon = document.querySelector('.theme-icon');
         if (themeIcon) {
-            themeIcon.textContent = document.body.classList.contains('light-mode') ? '💡' : '🔦';
+            // Usa ícone de meio-dia/meia-noite ao invés de sol/lua
+            themeIcon.textContent = document.body.classList.contains('light-mode') ? '💡' : '�';
         }
     }
 
@@ -1139,4 +1140,3 @@
         setTimeout(initDevPanel, 0);
     }
 })();
-
