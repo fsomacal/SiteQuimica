@@ -10,9 +10,39 @@
         {id:'S-04', name:'Estação Meteo - Centro', type:'weather', value:'Normal', unit:'', normalRange:[0,1], warnRange:[1,2], min:0, max:3}
     ];
 
+    // Configuration: limiares de criticidade (ajustáveis)
+    const thresholds = {
+        rain: { warn: 35, danger: 75 },   // mm/h
+        river: { warn: 4.0, danger: 5.0 }, // meters
+        wind: { warn: 40, danger: 60 }    // km/h
+    };
+
+    // expose for other modules / dev console
+    window.thresholds = thresholds;
+
+    // Histórico de amostras para os gráficos (exposto globalmente)
+    window.sensorHistory = { timestamps: [], rain: [], wind: [], river: [], maxLen: 60 };
+
     function getSensorLevel(sensor){
         if(sensor.type === 'weather') return sensor.value === 'Normal' ? '' : (sensor.value === 'Atenção' ? 'warn' : 'danger');
         const val = sensor.value;
+        // Use configured thresholds when available
+        if(sensor.type === 'rain'){
+            if(val >= thresholds.rain.danger) return 'danger';
+            if(val >= thresholds.rain.warn) return 'warn';
+            return '';
+        }
+        if(sensor.type === 'river'){
+            if(val >= thresholds.river.danger) return 'danger';
+            if(val >= thresholds.river.warn) return 'warn';
+            return '';
+        }
+        if(sensor.type === 'wind'){
+            if(val >= thresholds.wind.danger) return 'danger';
+            if(val >= thresholds.wind.warn) return 'warn';
+            return '';
+        }
+        // fallback to original logic
         if(val >= sensor.warnRange[1] || val >= 5) return 'danger';
         if(val >= sensor.warnRange[0]) return 'warn';
         return '';
@@ -480,20 +510,25 @@
             window.sensorData[3].value = 'Normal';
         }
         
-        // Auto-trigger siren in danger
-        if(simState.riverLevel >= 5 && !window.audioCtx){
-            window.startSiren();
-            simState.alertCount++;
-        } else if(simState.riverLevel < 4.5 && window.audioCtx){
-            window.stopSiren();
-        }
-
-        // Composite alarm: outros alertas só tocam se os três sensores estiverem críticos
+        // Auto-trigger siren in danger (with small hysteresis)
         try{
+            const riverDanger = (window.thresholds && window.thresholds.river && window.thresholds.river.danger) || 5.0;
+            const riverHyst = Math.max(0.3, (window.thresholds && window.thresholds.river && 0.5) || 0.5);
+            if(simState.riverLevel >= riverDanger && !window.audioCtx){
+                window.startSiren();
+                simState.alertCount++;
+            } else if(simState.riverLevel < (riverDanger - riverHyst) && window.audioCtx){
+                window.stopSiren();
+            }
+
+            // Composite alarm: outros alertas só tocam se os três sensores estiverem críticos
             const rain = window.sensorData[0] && Number(window.sensorData[0].value) || 0;
             const river = window.sensorData[1] && Number(window.sensorData[1].value) || 0;
             const wind = window.sensorData[2] && Number(window.sensorData[2].value) || 0;
-            const allCritical = (rain >= 75) && (river >= 5.0) && (wind >= 60);
+            const rainCrit = (window.thresholds && window.thresholds.rain && window.thresholds.rain.danger) || 75;
+            const windCrit = (window.thresholds && window.thresholds.wind && window.thresholds.wind.danger) || 60;
+            const riverCrit = riverDanger;
+            const allCritical = (rain >= rainCrit) && (river >= riverCrit) && (wind >= windCrit);
             if(allCritical){
                 // Start secondary alarm (beeps) in addition to main siren
                 window.startSecondaryAlarm();
@@ -647,60 +682,144 @@
             const ctxR = document.getElementById('chartRain');
             const ctxW = document.getElementById('chartWind');
             const ctxV = document.getElementById('chartRiver');
-            if(!ctxR || !ctxW || !ctxV || typeof Chart === 'undefined') return;
+            console.log('initCharts: elements', !!ctxR, !!ctxW, !!ctxV, 'Chart', typeof Chart);
+            if(typeof Chart === 'undefined'){
+                console.warn('Chart.js não encontrado. Verifique se o CDN carregou antes de `main.js`.');
+                // show small fallback notice in the graphs area if possible
+                try{
+                    const el = document.getElementById('graficos');
+                    if(el && !el.querySelector('.chart-fallback')){
+                        const note = document.createElement('div');
+                        note.className = 'chart-fallback muted';
+                        note.style.marginTop = '8px';
+                        note.textContent = 'Gráficos indisponíveis: Chart.js não carregado.';
+                        el.appendChild(note);
+                    }
+                }catch(e){}
+                return;
+            }
+            if(!ctxR || !ctxW || !ctxV){
+                console.warn('initCharts: canvas elements não encontrados');
+                return;
+            }
 
-            const commonOptions = {
-                type: 'line',
-                options: {
-                    animation: false,
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { x: { display: false } },
-                    plugins: { legend: { display: false } }
-                }
+            const commonOpts = {
+                animation: false,
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { intersect: false, mode: 'index' },
+                plugins: { legend: { display: true, position: 'top', labels:{boxWidth:12} }, tooltip: {enabled:true} },
+                // hide x-axis labels (show only on hover via tooltip)
+                scales: { x: { display: false } }
             };
 
-            const nowLabels = Array.from({length:30}, (_,i)=>'');
+            // seed history with small jitter to avoid flat initial line
+            const now = Date.now();
+            const seedCount = window.sensorHistory.maxLen;
+            window.sensorHistory.timestamps = [];
+            window.sensorHistory.rain = [];
+            window.sensorHistory.wind = [];
+            window.sensorHistory.river = [];
+            for(let i = seedCount - 1; i >= 0; i--){
+                const ts = new Date(now - i * 1000);
+                window.sensorHistory.timestamps.push(ts.toLocaleTimeString());
+                // small jitter
+                window.sensorHistory.rain.push(Number((window.sensorData[0].value + (Math.random()-0.5)*3).toFixed(1)));
+                window.sensorHistory.wind.push(Number((window.sensorData[2].value + (Math.random()-0.5)*4).toFixed(1)));
+                window.sensorHistory.river.push(Number((window.sensorData[1].value + (Math.random()-0.5)*0.05).toFixed(2)));
+            }
 
-            rainChart = new Chart(ctxR.getContext('2d'), Object.assign({}, commonOptions, {
-                data: { labels: nowLabels.slice(), datasets:[{data: Array(30).fill(window.sensorData[0].value || 0), borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.08)', tension:0.2}] },
-                options:{...commonOptions.options, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}}}
-            }));
+            rainChart = new Chart(ctxR.getContext('2d'), {
+                type: 'line',
+                data: { labels: window.sensorHistory.timestamps.slice(), datasets:[{label:'Pluviometria (mm/h)',data: window.sensorHistory.rain.slice(), borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.12)', tension:0.2, pointRadius:2}] },
+                options: {...commonOpts, scales:{...commonOpts.scales, y:{min:0, max:100, title:{display:true,text:'mm/h'}}}, layout:{padding:10}}
+            });
 
-            windChart = new Chart(ctxW.getContext('2d'), Object.assign({}, commonOptions, {
-                data: { labels: nowLabels.slice(), datasets:[{data: Array(30).fill(window.sensorData[2].value || 0), borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,0.06)', tension:0.2}] },
-                options:{...commonOptions.options, scales:{y:{beginAtZero:true}}}
-            }));
+            windChart = new Chart(ctxW.getContext('2d'), {
+                type: 'line',
+                data: { labels: window.sensorHistory.timestamps.slice(), datasets:[{label:'Vento (km/h)',data: window.sensorHistory.wind.slice(), borderColor:'#fb923c', backgroundColor:'rgba(251,146,60,0.12)', tension:0.2, pointRadius:2}] },
+                options: {...commonOpts, scales:{...commonOpts.scales, y:{min:0, max:100, title:{display:true,text:'km/h'}}}, layout:{padding:10}}
+            });
 
-            riverChart = new Chart(ctxV.getContext('2d'), Object.assign({}, commonOptions, {
-                data: { labels: nowLabels.slice(), datasets:[{data: Array(30).fill(window.sensorData[1].value || 0), borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.06)', tension:0.2}] },
-                options:{...commonOptions.options, scales:{y:{beginAtZero:true}}}
-            }));
+            riverChart = new Chart(ctxV.getContext('2d'), {
+                type: 'line',
+                data: { labels: window.sensorHistory.timestamps.slice(), datasets:[{label:'Nível do Rio (m)',data: window.sensorHistory.river.slice(), borderColor:'#34d399', backgroundColor:'rgba(52,211,153,0.12)', tension:0.2, pointRadius:2}] },
+                options: {...commonOpts, scales:{...commonOpts.scales, y:{min:0, max:10, title:{display:true,text:'m'}}}, layout:{padding:10}}
+            });
         }catch(e){ console.warn('Chart init failed', e); }
     }
 
     function updateCharts(){
         try{
-            if(rainChart){
-                rainChart.data.datasets[0].data.push(Number(window.sensorData[0].value.toFixed(1)));
-                if(rainChart.data.datasets[0].data.length>60) rainChart.data.datasets[0].data.shift();
-                rainChart.update('none');
-            }
-            if(windChart){
-                windChart.data.datasets[0].data.push(Number(window.sensorData[2].value.toFixed(1)));
-                if(windChart.data.datasets[0].data.length>60) windChart.data.datasets[0].data.shift();
-                windChart.update('none');
-            }
-            if(riverChart){
-                riverChart.data.datasets[0].data.push(Number(window.sensorData[1].value.toFixed(2)));
-                if(riverChart.data.datasets[0].data.length>60) riverChart.data.datasets[0].data.shift();
-                riverChart.update('none');
-            }
+            // push new sample into history (timestamp + values)
+            const ts = new Date().toLocaleTimeString();
+            const rainVal = Number(window.sensorData[0].value.toFixed(1));
+            const windVal = Number(window.sensorData[2].value.toFixed(1));
+            const riverVal = Number(window.sensorData[1].value.toFixed(2));
+
+            window.sensorHistory.timestamps.push(ts);
+            window.sensorHistory.rain.push(rainVal);
+            window.sensorHistory.wind.push(windVal);
+            window.sensorHistory.river.push(riverVal);
+
+            // respect selected history length
+            try{
+                const sel = document.getElementById('historyLen');
+                const max = sel ? parseInt(sel.value,10) : window.sensorHistory.maxLen;
+                window.sensorHistory.maxLen = max;
+            }catch(e){}
+
+            while(window.sensorHistory.timestamps.length > window.sensorHistory.maxLen){ window.sensorHistory.timestamps.shift(); }
+            while(window.sensorHistory.rain.length > window.sensorHistory.maxLen){ window.sensorHistory.rain.shift(); }
+            while(window.sensorHistory.wind.length > window.sensorHistory.maxLen){ window.sensorHistory.wind.shift(); }
+            while(window.sensorHistory.river.length > window.sensorHistory.maxLen){ window.sensorHistory.river.shift(); }
+
+            if(rainChart){ rainChart.data.labels = window.sensorHistory.timestamps.slice(); rainChart.data.datasets[0].data = window.sensorHistory.rain.slice(); rainChart.update('none'); }
+            if(windChart){ windChart.data.labels = window.sensorHistory.timestamps.slice(); windChart.data.datasets[0].data = window.sensorHistory.wind.slice(); windChart.update('none'); }
+            if(riverChart){ riverChart.data.labels = window.sensorHistory.timestamps.slice(); riverChart.data.datasets[0].data = window.sensorHistory.river.slice(); riverChart.update('none'); }
         }catch(e){/* ignore chart update errors */}
     }
 
-    // Inicializa tudo e inicia simulação
-    initCharts();
+    // Export history as CSV
+    function exportCsv(){
+        const rows = [];
+        rows.push(['time','rain_mm_h','wind_km_h','river_m'].join(','));
+        for(let i=0;i<window.sensorHistory.timestamps.length;i++){
+            rows.push([window.sensorHistory.timestamps[i], window.sensorHistory.rain[i], window.sensorHistory.wind[i], window.sensorHistory.river[i]].join(','));
+        }
+        const csv = rows.join('\n');
+        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'sensor_history.csv';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
+    }
+
+    // wire export button
+    try{ document.getElementById('exportCsv').addEventListener('click', exportCsv); }catch(e){}
+    // history length control: apply immediately and update charts
+    try{ document.getElementById('historyLen').addEventListener('change', ()=>{
+        const val = parseInt(document.getElementById('historyLen').value,10);
+        window.sensorHistory.maxLen = val;
+        // trim existing arrays if larger than new max
+        while(window.sensorHistory.timestamps.length > val) window.sensorHistory.timestamps.shift();
+        while(window.sensorHistory.rain.length > val) window.sensorHistory.rain.shift();
+        while(window.sensorHistory.wind.length > val) window.sensorHistory.wind.shift();
+        while(window.sensorHistory.river.length > val) window.sensorHistory.river.shift();
+        try{ updateCharts(); }catch(e){}
+    }); }catch(e){}
+
+    // Attempt to initialize charts now and again on load (helps if Chart.js loads slowly)
+    try{ initCharts(); }catch(e){ console.warn('initCharts initial call failed', e); }
+    window.addEventListener('load', function(){
+        try{
+            if(typeof Chart !== 'undefined') initCharts();
+            else console.warn('Chart.js still undefined on window.load');
+        }catch(e){ console.warn('initCharts on load failed', e); }
+    });
     startSimulation();
     updateDevStats();
     updateDevDisplays();

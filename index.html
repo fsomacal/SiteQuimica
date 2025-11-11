@@ -144,15 +144,28 @@
         <section id="graficos" style="margin-top:18px" class="card">
             <h3 style="margin:0 0 8px">Gráficos dos Sensores (simulados)</h3>
             <p class="muted">Visualização em tempo real dos últimos valores simulados do pluviômetro, anemômetro e nível do rio.</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px">
+                <div style="display:flex;gap:8px;align-items:center">
+                    <label for="historyLen" class="muted" style="font-size:13px">Amostras:</label>
+                    <select id="historyLen" style="padding:6px;border-radius:6px;background:rgba(255,255,255,0.03);color:#e6eef8;border:1px solid rgba(255,255,255,0.04)">
+                        <option value="30">30</option>
+                        <option value="60" selected>60</option>
+                        <option value="120">120</option>
+                    </select>
+                </div>
+                <div style="display:flex;gap:8px">
+                    <button id="exportCsv" class="small">Exportar CSV</button>
+                </div>
+            </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
-                <div style="flex:1;min-width:280px">
-                    <canvas id="chartRain" height="160"></canvas>
+                <div style="flex:1 1 32%;min-width:280px">
+                    <canvas id="chartRain" height="260" style="width:100%;height:260px;display:block;background:transparent"></canvas>
                 </div>
-                <div style="flex:1;min-width:280px">
-                    <canvas id="chartWind" height="160"></canvas>
+                <div style="flex:1 1 32%;min-width:280px">
+                    <canvas id="chartWind" height="260" style="width:100%;height:260px;display:block;background:transparent"></canvas>
                 </div>
-                <div style="flex:1;min-width:280px">
-                    <canvas id="chartRiver" height="160"></canvas>
+                <div style="flex:1 1 32%;min-width:280px">
+                    <canvas id="chartRiver" height="260" style="width:100%;height:260px;display:block;background:transparent"></canvas>
                 </div>
             </div>
         </section>
@@ -179,6 +192,9 @@
                 <div class="muted">Email: contato@alertasonoro.org</div>
             </div>
         </footer>
+        <div style="text-align:center;margin-top:12px;margin-bottom:32px;font-size:13px;" class="muted">
+            <strong>Nota:</strong> Esta página é apenas uma demonstração — todos os dados são simulados e não representam leituras reais.
+        </div>
     </div>
 
     <!-- Developer Panel -->
